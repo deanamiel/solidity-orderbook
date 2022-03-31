@@ -47,9 +47,11 @@ contract OrderBook {
 
     mapping(address => Order) buyOrders;
     mapping(address => address) nextBuy;
+    uint256 public buyCount;
 
     mapping(address => Order) sellOrders;
     mapping(address => address) nextSell;
+    uint256 public sellCount;
 
     address constant BUFFER = address(1);
 
@@ -136,6 +138,7 @@ contract OrderBook {
         address temp = nextBuy[prev];
         nextBuy[prev] = msg.sender;
         nextBuy[msg.sender] = temp;
+        buyCount++;
 
         token1.transferFrom(msg.sender, address(this), _quantity);
 
@@ -153,6 +156,7 @@ contract OrderBook {
         nextBuy[prev] = nextBuy[msg.sender];
         delete nextBuy[msg.sender];
         delete buyOrders[msg.sender];
+        buyCount--;
 
         token1.transferFrom(address(this), msg.sender, quantity);
 
@@ -170,6 +174,7 @@ contract OrderBook {
         address temp = nextSell[prev];
         nextSell[prev] = msg.sender;
         nextSell[msg.sender] = temp;
+        sellCount++;
 
         token2.transferFrom(msg.sender, address(this), _quantity);
 
@@ -187,9 +192,37 @@ contract OrderBook {
         nextSell[prev] = nextSell[msg.sender];
         delete nextSell[msg.sender];
         delete sellOrders[msg.sender];
+        sellCount--;
 
         token2.transferFrom(address(this), msg.sender, quantity);
 
         emit CancelSellOrder(msg.sender);
+    }
+
+    function getBuySide()
+        external
+        view
+        returns (
+            address[] memory,
+            uint256[] memory,
+            uint256[] memory
+        )
+    {
+        address[] memory addressTemp = new address[](buyCount);
+        uint256[] memory priceTemp = new uint256[](buyCount);
+        uint256[] memory quantityTemp = new uint256[](buyCount);
+
+        address current = nextBuy[BUFFER];
+        for (uint256 i = 0; i < addressTemp.length; i++) {
+            addressTemp[i] = current;
+            Order storage order = buyOrders[current];
+
+            priceTemp[i] = order.price;
+            quantityTemp[i] = order.quantity;
+
+            current = nextBuy[current];
+        }
+
+        return (addressTemp, priceTemp, quantityTemp);
     }
 }
