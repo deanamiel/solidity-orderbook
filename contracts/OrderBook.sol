@@ -252,4 +252,11 @@ contract OrderBook {
 
         return (addressTemp, priceTemp, quantityTemp);
     }
+
+    function getSpread() external view returns (uint256) {
+        uint256 bestSell = sellOrders[nextSell[BUFFER]].price;
+        uint256 bestBuy = buyOrders[nextBuy[BUFFER]].price;
+
+        return bestBuy > bestSell ? bestBuy - bestSell : bestSell - bestBuy;
+    }
 }
