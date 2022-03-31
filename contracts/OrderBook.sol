@@ -2,7 +2,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract OrderBookFactory {
+contract OrderbookFactory {
     uint256 public pairsSupported;
     mapping(bytes32 => address) public orderbooks;
 
@@ -28,14 +28,14 @@ contract OrderBookFactory {
             "Token pair already exists"
         );
 
-        orderbooks[identifier] = address(new OrderBook(token1, token2));
+        orderbooks[identifier] = address(new Orderbook(token1, token2));
         pairsSupported++;
 
         emit NewPair(token1, token2);
     }
 }
 
-contract OrderBook {
+contract Orderbook {
     IERC20 token1;
     IERC20 token2;
 
