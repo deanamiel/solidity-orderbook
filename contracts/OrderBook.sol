@@ -225,4 +225,31 @@ contract OrderBook {
 
         return (addressTemp, priceTemp, quantityTemp);
     }
+
+    function getSellSide()
+        external
+        view
+        returns (
+            address[] memory,
+            uint256[] memory,
+            uint256[] memory
+        )
+    {
+        address[] memory addressTemp = new address[](sellCount);
+        uint256[] memory priceTemp = new uint256[](sellCount);
+        uint256[] memory quantityTemp = new uint256[](sellCount);
+
+        address current = nextSell[BUFFER];
+        for (uint256 i = 0; i < addressTemp.length; i++) {
+            addressTemp[i] = current;
+            Order storage order = sellOrders[current];
+
+            priceTemp[i] = order.price;
+            quantityTemp[i] = order.quantity;
+
+            current = nextSell[current];
+        }
+
+        return (addressTemp, priceTemp, quantityTemp);
+    }
 }
