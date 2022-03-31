@@ -86,10 +86,29 @@ contract OrderBook {
             (next == BUFFER || price > buyOrders[next].price));
     }
 
+    function _verifyIndexSell(
+        address prev,
+        uint256 price,
+        address next
+    ) internal view returns (bool) {
+        return ((prev == BUFFER || price >= buyOrders[prev].price) &&
+            (next == BUFFER || price < buyOrders[next].price));
+    }
+
     function _findPrevBuy(uint256 price) internal view returns (address) {
         address prev = BUFFER;
         while (true) {
             if (_verifyIndexBuy(prev, price, nextBuy[prev])) {
+                return prev;
+            }
+            prev = nextBuy[prev];
+        }
+    }
+
+    function _findPrevSell(uint256 price) internal view returns (address) {
+        address prev = BUFFER;
+        while (true) {
+            if (_verifyIndexSell(prev, price, nextBuy[prev])) {
                 return prev;
             }
             prev = nextBuy[prev];
@@ -138,5 +157,39 @@ contract OrderBook {
         token1.transferFrom(address(this), msg.sender, quantity);
 
         emit CancelBuyOrder(msg.sender);
+    }
+
+    function placeSell(uint256 _price, uint256 _quantity) external {
+        require(
+            sellOrders[msg.sender].date == 0,
+            "First delete existing sell order"
+        );
+
+        sellOrders[msg.sender] = Order(_price, _quantity, block.timestamp);
+        address prev = _findPrevSell(_price);
+        address temp = nextSell[prev];
+        nextSell[prev] = msg.sender;
+        nextSell[msg.sender] = temp;
+
+        token2.transferFrom(msg.sender, address(this), _quantity);
+
+        emit SellOrderPlaced(_price, _quantity, msg.sender);
+    }
+
+    function cancelSell() external {
+        require(
+            sellOrders[msg.sender].date != 0,
+            "Sell order must already exist"
+        );
+
+        uint256 quantity = sellOrders[msg.sender].quantity;
+        address prev = _getPrevious(msg.sender);
+        nextSell[prev] = nextSell[msg.sender];
+        delete nextSell[msg.sender];
+        delete sellOrders[msg.sender];
+
+        token2.transferFrom(address(this), msg.sender, quantity);
+
+        emit CancelSellOrder(msg.sender);
     }
 }
