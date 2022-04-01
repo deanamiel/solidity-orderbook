@@ -1,12 +1,9 @@
 const OrderbookFactory = artifacts.require("OrderbookFactory");
+const Token1 = artifacts.require("Token1");
+const Token2 = artifacts.require("Token2");
 
-module.exports = function (deployer, network, addresses) {
+module.exports = async function (deployer, network, addresses) {
   await deployer.deploy(OrderbookFactory);
-  const factory = OrderbookFactory.deployed();
-
   await deployer.deploy(Token1);
   await deployer.deploy(Token2);
-
-  const token1 = Token1.deployed();
-  const token2 = Token2.deployed();
 };
