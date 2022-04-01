@@ -56,7 +56,7 @@ contract OrderbookFactory {
  * book. This contract maintains an ordered list of both the buy side and the
  * sell side of the book and allows any user to remove his or her order. There
  * is also functionality to return both the buy and sell side of the book. Please
- * see the READ.me for further assumptions.
+ * see the README for further assumptions.
  */
 contract Orderbook {
     IERC20 token1;
